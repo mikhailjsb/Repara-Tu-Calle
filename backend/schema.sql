@@ -5,6 +5,9 @@ CREATE TABLE IF NOT EXISTS reclamos (
     category VARCHAR(50) NOT NULL,
     description TEXT NOT NULL,
     photo_path VARCHAR(255) NOT NULL,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    address TEXT,
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 
