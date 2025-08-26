@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Página con el formulario para reportar problemas en la calle
 function FormPage() {
@@ -6,6 +6,27 @@ function FormPage() {
   const [description, setDescription] = useState('');
   const [photo, setPhoto] = useState(null);
   const [message, setMessage] = useState('');
+  const [location, setLocation] = useState({ latitude: null, longitude: null, address: '' });
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setLocation((prev) => ({ ...prev, latitude, longitude }));
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await res.json();
+          setLocation({ latitude, longitude, address: data.display_name });
+        } catch (err) {
+          console.error('Error obteniendo dirección', err);
+        }
+      },
+      (err) => {
+        console.error('Error obteniendo ubicación', err);
+      }
+    );
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,6 +39,13 @@ function FormPage() {
     formData.append('category', category);
     formData.append('description', description);
     formData.append('photo', photo);
+    if (location.latitude && location.longitude) {
+      formData.append('latitude', location.latitude);
+      formData.append('longitude', location.longitude);
+    }
+    if (location.address) {
+      formData.append('address', location.address);
+    }
 
     try {
       const res = await fetch('/api/reclamos', {
@@ -67,6 +95,9 @@ function FormPage() {
           onChange={(e) => setPhoto(e.target.files[0])}
           required
         />
+        {location.address && (
+          <p className="address">Ubicación detectada: {location.address}</p>
+        )}
         <button type="submit">Enviar</button>
       </form>
       {message && <p className="message">{message}</p>}

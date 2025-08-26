@@ -52,6 +52,15 @@ function ResultsPage() {
             <div className="complaint-details">
               <h4>{getLabel(complaint.category)}</h4>
               <p>{complaint.description}</p>
+              {complaint.address && <p className="address">{complaint.address}</p>}
+              {complaint.latitude && complaint.longitude && (
+                <iframe
+                  title={`map-${complaint.id}`}
+                  width="100%"
+                  height="200"
+                  src={`https://www.openstreetmap.org/export/embed.html?layer=mapnik&marker=${complaint.latitude},${complaint.longitude}`}
+                ></iframe>
+              )}
               <small>
                 {new Date(complaint.created_at).toLocaleDateString()} {new Date(complaint.created_at).toLocaleTimeString()}
               </small>

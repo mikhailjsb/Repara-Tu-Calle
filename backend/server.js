@@ -50,7 +50,7 @@ app.get('/api/reclamos', async (req, res) => {
   try {
     // Fetch all complaints ordered by creation date desc
     const complaintsResult = await pool.query(
-      'SELECT id, category, description, photo_path, created_at FROM reclamos ORDER BY created_at DESC'
+      'SELECT id, category, description, photo_path, latitude, longitude, address, created_at FROM reclamos ORDER BY created_at DESC'
     );
 
     // Fetch counts per category
@@ -75,7 +75,7 @@ app.get('/api/reclamos', async (req, res) => {
  * Creates a new complaint. Expects `category` and `description` fields and a file `photo`.
  */
 app.post('/api/reclamos', upload.single('photo'), async (req, res) => {
-  const { category, description } = req.body;
+  const { category, description, latitude, longitude, address } = req.body;
   const file = req.file;
 
   // Validate input
@@ -86,8 +86,8 @@ app.post('/api/reclamos', upload.single('photo'), async (req, res) => {
   try {
     const photoPath = '/uploads/' + file.filename;
     const insertResult = await pool.query(
-      'INSERT INTO reclamos (category, description, photo_path, created_at) VALUES ($1, $2, $3, NOW()) RETURNING id, category, description, photo_path, created_at',
-      [category, description, photoPath]
+      'INSERT INTO reclamos (category, description, photo_path, latitude, longitude, address, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING id, category, description, photo_path, latitude, longitude, address, created_at',
+      [category, description, photoPath, latitude, longitude, address]
     );
     res.status(201).json(insertResult.rows[0]);
   } catch (err) {
